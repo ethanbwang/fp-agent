@@ -1,0 +1,438 @@
+/* Center flight booking form */
+#flight-form-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 70vh;
+    text-align: center;
+}
+
+#flight-form-container .step-form {
+    width: 100%;
+    max-width: 420px;
+    text-align: left;
+}
+
+/* --- MULTISTEP FORM --- */
+.step-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    max-width: 400px;
+}
+
+.step-form label {
+    display: flex;
+    flex-direction: column;
+    color: var(--fg);
+    font-weight: 500;
+}
+
+.step-form input,
+.step-form select,
+.step-form textarea {
+    background: #111;
+    color: var(--fg);
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 0.6em;
+}
+
+.step-form input:focus,
+.step-form select:focus {
+    outline: none;
+    border-color: var(--accent-glow);
+    box-shadow: 0 0 6px var(--accent-glow);
+}
+
+.flight-date-picker {
+    position: relative;
+    display: inline-block;
+    color: var(--fg);
+}
+
+#flight-date {
+    background: #111;
+    color: var(--fg);
+    border: 1px solid #333;
+    border-radius: 6px;
+    padding: 0.6em;
+    cursor: pointer;
+    text-align: center;
+}
+
+/* Popup calendar */
+.calendar {
+    position: absolute;
+    top: 110%;
+    left: 0;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    box-shadow: 0 0 12px rgba(0, 255, 255, 0.4);
+    padding: 1em;
+    z-index: 1000;
+    width: auto;
+}
+
+/* Header with month name + arrows */
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.6em;
+    font-weight: 600;
+    color: var(--accent-glow);
+}
+
+.calendar-header button {
+    background: none;
+    border: 1px solid #333;
+    color: var(--fg);
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 0.2em 0.6em;
+}
+
+.calendar-header button:hover {
+    background: var(--accent-glow);
+    color: #000;
+}
+
+/* Day grid */
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.2em;
+    text-align: center;
+}
+
+.calendar-grid div {
+    padding: 0.4em;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.calendar-grid div:hover {
+    background: var(--accent-glow);
+    color: #000;
+}
+
+.calendar-grid .inactive {
+    opacity: 0;
+    cursor: default;
+}
+
+.calendar-grid .selected {
+    background: var(--accent-glow);
+    color: #000;
+    font-weight: bold;
+}
+
+/* Footer with clear and today */
+.calendar-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 0.6em;
+    font-weight: 600;
+    color: var(--accent-glow);
+}
+
+.calendar-footer button {
+    background: none;
+    border: 1px solid #333;
+    color: var(--fg);
+    border-radius: 4px;
+    cursor: pointer;
+    padding: 0.2em 0.6em;
+}
+
+.calendar-footer button:hover {
+    background: var(--accent-glow);
+    color: #000;
+}
+
+.custom-tooltip {
+    position: absolute;
+    background: #222;
+    color: var(--accent-glow);
+    padding: 0.4em 0.8em;
+    border-radius: 6px;
+    font-size: 0.9em;
+    box-shadow: 0 0 8px var(--accent-glow);
+    pointer-events: none;
+    z-index: 9999;
+}
+
+
+#flight-results {
+    margin-top: 1em;
+    margin-bottom: 1em;
+    display: flex;
+    flex-direction: column;
+    max-height: 250px;
+    overflow-y: auto;
+    width: 100%;
+    max-width: 420px;
+}
+
+/* --- FLIGHT OPTION BUTTONS --- */
+.flight-option {
+    display: block;
+    width: 98%;
+    align-self: center;
+    text-align: left;
+    padding: 1em;
+    margin: 0.5em 0;
+    border-radius: 10px;
+    border: 1px solid #333;
+    background: #1b1e22;
+    color: var(--fg);
+    font-family: inherit;
+    font-size: 0.95em;
+    line-height: 1.4;
+    cursor: pointer;
+    transition: background 0.25s, transform 0.1s, border-color 0.25s, box-shadow 0.25s;
+}
+
+.flight-option:hover {
+    background: #23272d;
+    border-color: var(--accent-glow);
+    box-shadow: 0 0 8px var(--accent-glow);
+    transform: translateY(-1px);
+}
+
+.flight-option:active {
+    transform: translateY(0);
+}
+
+.flight-option.selected {
+    background: var(--accent-glow);
+    color: #000;
+    border-color: var(--accent-glow);
+    font-weight: 600;
+    box-shadow: 0 0 12px var(--accent-glow);
+}
+
+
+/* --- CARRY-ON TOGGLE ROW --- */
+.carryon-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5em;
+    margin: 1em 0;
+    flex-wrap: wrap;
+}
+
+.carryon-label {
+    font-weight: 500;
+    font-size: 0.95em;
+    color: var(--fg);
+    user-select: none;
+    min-width: 100px;
+    text-align: center;
+    transition: color 0.25s ease, opacity 0.25s ease;
+    opacity: 0.6;
+}
+
+/* Highlight active label */
+#carryOn:checked~.carryon-label.yes,
+#carryOn:not(:checked)~.carryon-label.no {
+    color: var(--accent-glow);
+    font-weight: 600;
+    opacity: 1;
+}
+
+/* --- Toggle --- */
+.toggle {
+    position: relative;
+    width: 60px;
+    height: 32px;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #333;
+    border-radius: 32px;
+    transition: background-color 0.3s;
+}
+
+.slider::before {
+    position: absolute;
+    content: "";
+    height: 24px;
+    width: 24px;
+    left: 4px;
+    top: 4px;
+    background-color: #ccc;
+    border-radius: 50%;
+    transition: transform 0.3s, background-color 0.3s;
+}
+
+.toggle input:checked+.slider {
+    background-color: var(--accent-glow);
+}
+
+.toggle input:checked+.slider::before {
+    transform: translateX(28px);
+    background-color: #000;
+}
+
+
+/* --- SEAT SELECTION ROW --- */
+.seat-selection {
+    display: flex;
+    gap: 0.8em;
+    align-items: center;
+}
+
+.seat-selection select {
+    flex: 1;
+}
+
+/* Make selects uniform size and visually aligned */
+.seat-selection select,
+.step-form select {
+    min-width: 100px;
+}
+
+button[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* --- PROGRESS BAR --- */
+.progress-container {
+    margin-bottom: 1em;
+}
+
+.progress-text {
+    text-align: center;
+    font-weight: 600;
+    margin-bottom: 0.3em;
+    color: var(--accent-glow);
+}
+
+.progress-bar {
+    background: #1f2833;
+    border-radius: 8px;
+    height: 8px;
+    width: 100%;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    background: var(--accent-glow);
+    height: 100%;
+    width: 0;
+    border-radius: 8px;
+    transition: width 0.4s ease;
+}
+
+/* --- NAVIGATION BUTTONS --- */
+.nav-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 1em;
+    margin-top: 1em;
+}
+
+.nav-buttons button {
+    flex: 1;
+}
+
+.nav-buttons #back-btn {
+    background: #222;
+    color: var(--fg);
+    border: 1px solid #444;
+}
+
+.nav-buttons #back-btn:hover {
+    background: #333;
+}
+
+/* --- GLOWING RADIO BUTTONS --- */
+fieldset {
+    border: none;
+    margin: 1em 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5em 1.2em;
+}
+
+fieldset legend {
+    font-weight: 600;
+    color: var(--accent-glow);
+    margin-bottom: 0.5em;
+    width: 100%;
+}
+
+/* Container for each option */
+fieldset label {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    cursor: pointer;
+    position: relative;
+    font-weight: 500;
+    color: var(--fg);
+}
+
+/* Hide the native radio input */
+fieldset input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+}
+
+/* Create the custom glowing circle */
+fieldset input[type="radio"]+span {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #555;
+    border-radius: 50%;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    box-shadow: 0 0 0px rgba(0, 0, 0, 0);
+}
+
+/* Hover effect */
+fieldset label:hover input[type="radio"]+span {
+    border-color: var(--accent);
+    box-shadow: 0 0 4px var(--accent-glow);
+}
+
+/* Checked state */
+fieldset input[type="radio"]:checked+span {
+    border-color: var(--accent-glow);
+    box-shadow: 0 0 8px var(--accent-glow);
+    background: radial-gradient(circle at center, var(--accent-glow) 35%, transparent 36%);
+}
+
+/* "Other" text input consistency */
+#other-sex {
+    margin-top: 0.6em;
+    background: #111;
+    border: 1px solid #333;
+    color: var(--fg);
+    border-radius: 6px;
+    padding: 0.5em;
+    width: 100%;
+}

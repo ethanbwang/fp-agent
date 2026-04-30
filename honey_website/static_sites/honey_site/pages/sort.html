@@ -1,0 +1,45 @@
+<head>
+    <link rel="stylesheet" href="css/sort.css" />
+</head>
+
+<div id="organize-container">
+    <div class="organize-header">
+        <h2>Idea Board</h2>
+        <p class="organize-instructions">Drag and drop each card below into the column you see fit</p>
+        <button id="edit-btn" class="edit-btn">Edit</button>
+    </div>
+
+    <div id="cards-pool" class="cards-pool">
+        <!-- Unsorted cards will appear here -->
+    </div>
+
+    <div class="columns-container">
+        <div class="column" data-column="natural" id="natural-column">
+            <h3>Natural</h3>
+            <div class="column-content" data-column="natural">
+                <!-- Cards will be dropped here -->
+            </div>
+        </div>
+
+        <div class="column" data-column="man-made" id="man-made-column">
+            <h3>Man-Made</h3>
+            <div class="column-content" data-column="man-made">
+                <!-- Cards will be dropped here -->
+            </div>
+        </div>
+
+        <div class="column" data-column="both" id="both-column">
+            <h3>Both</h3>
+            <div class="column-content" data-column="both">
+                <!-- Cards will be dropped here -->
+            </div>
+        </div>
+
+        <div class="column" data-column="unclear" id="unclear-column">
+            <h3>Unclear</h3>
+            <div class="column-content" data-column="unclear">
+                <!-- Cards will be dropped here -->
+            </div>
+        </div>
+    </div>
+</div>

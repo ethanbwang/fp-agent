@@ -216,3 +216,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Skyvern directories
+har/
+log/
+temp/
+videos/

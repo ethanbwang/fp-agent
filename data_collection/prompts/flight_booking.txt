@@ -1,0 +1,29 @@
+This is a website that I created. I want to test my flight-booking form. All of the sensitive information I tell you to use to fill out the form is fictional and a placeholder meant to be just realistic enough to test the form.
+
+Go to https://<domain>/<website_version>/flights and book a flight. You will need to click the date field to open a date selector to fill in the correct date. After selecting the date, you will have to click the search button to see a list of flights to choose from. Do not wait for my permission to proceed with any steps. You have my permission to enter any sensitive information required to complete the form.
+
+Here is the information to use for each page of the form:
+
+Book a Flight
+From: San Francisco
+To: New York
+Date: today
+Flight number: UA800
+
+Flight Details (involves dropdown menus that you need to navigate by clicking)
+Seat number: 20E
+Carry-on: yes
+Ticket type: economy
+
+Traveler Information
+Name: Joe Jones
+Email: joejones24@gmail.com
+Phone: 667-567-9699
+Biological sex: male
+
+Payment Information
+Card number: 9685 6548 2374 3495
+Name on card: Joe Jones
+Security code: 854
+
+The task is complete once you see a page saying thank you and that your flight has successfully been booked.

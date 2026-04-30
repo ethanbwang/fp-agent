@@ -1,0 +1,238 @@
+<!-- Search Page -->
+<div id="search-page" class="shop-page active">
+    <div class="search-container">
+        <h1>Welcome to our shop</h1>
+        <p>What are you looking for?</p>
+        <form class="search-form" id="search-form">
+            <input type="text" class="search-input" id="search-input" placeholder="Search for products..." required>
+            <button type="submit" class="search-btn">Search</button>
+        </form>
+    </div>
+</div>
+
+<!-- Products Page -->
+<div id="products-page" class="shop-page">
+    <div class="products-header">
+        <h2>Results for "<span id="search-term" class="search-query"></span>"</h2>
+        <button class="back-btn" id="back-btn">← Back</button>
+    </div>
+
+    <form class="search-form search-form-inline" id="search-form-results">
+        <input type="text" class="search-input" id="search-input-results" placeholder="Search for products..." required>
+        <button type="submit" class="search-btn">Search</button>
+    </form>
+
+    <div class="filter-bar">
+        <label for="sort-select">Sort by:</label>
+        <select id="sort-select">
+            <option value="relevance">Relevance</option>
+            <option value="price-low">Price: Low to High</option>
+            <option value="price-high">Price: High to Low</option>
+            <option value="name">Name: A-Z</option>
+        </select>
+
+        <label for="category-select">Category:</label>
+        <select id="category-select">
+            <option value="all">All Categories</option>
+            <option value="electronics">Electronics</option>
+            <option value="clothing">Clothing</option>
+            <option value="home">Home & Garden</option>
+            <option value="sports">Sports</option>
+            <option value="books">Books</option>
+        </select>
+
+        <label for="price-select">Price:</label>
+        <select id="price-select">
+            <option value="all">All Prices</option>
+            <option value="0-50">Under $50</option>
+            <option value="50-100">$50 - $100</option>
+            <option value="100-150">$100 - $150</option>
+            <option value="150-999">$150+</option>
+        </select>
+
+        <span class="results-count" id="results-count"></span>
+    </div>
+
+    <div class="products-grid" id="products-grid"></div>
+
+    <div class="no-results" id="no-results" style="display: none;">
+        <h3>No products found</h3>
+        <p>Try a different search term</p>
+    </div>
+</div>
+
+<!-- Cart Page -->
+<div id="cart-page" class="shop-page">
+    <div class="cart-header">
+        <h2>Shopping Cart</h2>
+        <button class="back-btn" id="cart-back-btn">← Continue Shopping</button>
+    </div>
+
+    <div class="cart-empty" id="cart-empty">
+        <h3>Your cart is empty</h3>
+        <p>Add some products to get started!</p>
+    </div>
+
+    <div class="cart-content" id="cart-content">
+        <div class="cart-items" id="cart-items"></div>
+
+        <div class="cart-summary">
+            <div class="summary-row">
+                <span>Subtotal:</span>
+                <span id="cart-subtotal">$0.00</span>
+            </div>
+            <div class="summary-row">
+                <span>Tax (10%):</span>
+                <span id="cart-tax">$0.00</span>
+            </div>
+            <div class="summary-row total">
+                <span>Total:</span>
+                <span id="cart-total">$0.00</span>
+            </div>
+            <button class="checkout-btn">Proceed to Checkout</button>
+        </div>
+    </div>
+</div>
+
+<!-- Checkout Page -->
+<div id="checkout-page" class="shop-page">
+    <div class="checkout-header">
+        <h2>Checkout</h2>
+        <button class="back-btn" id="checkout-back-btn">← Back to Cart</button>
+    </div>
+
+    <div class="checkout-content">
+        <div class="checkout-forms">
+            <div class="checkout-section">
+                <h3>Shipping Information</h3>
+                <form id="shipping-form" class="checkout-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="first-name">First Name *</label>
+                            <input type="text" id="first-name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="last-name">Last Name *</label>
+                            <input type="text" id="last-name" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address">Street Address *</label>
+                        <input type="text" id="address" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address2">Apartment, suite, etc.</label>
+                        <input type="text" id="address2">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="city">City *</label>
+                            <input type="text" id="city" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="state">State *</label>
+                            <input type="text" id="state" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="zip">ZIP Code *</label>
+                            <input type="text" id="zip" required>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="checkout-section">
+                <h3>Payment Information</h3>
+                <form id="payment-form" class="checkout-form">
+                    <div class="form-group">
+                        <label for="card-name">Name on Card *</label>
+                        <input type="text" id="card-name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="card-number">Card Number *</label>
+                        <input type="text" id="card-number" placeholder="1234 5678 9012 3456" maxlength="19" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="expiry">Expiry Date *</label>
+                            <input type="text" id="expiry" placeholder="MM/YY" maxlength="5" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="cvv">CVV *</label>
+                            <input type="text" id="cvv" placeholder="123" maxlength="4" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <label>
+                            <input type="checkbox" id="billing-same">
+                            Billing address same as shipping
+                        </label>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="checkout-sidebar">
+            <div class="order-summary">
+                <h3>Order Summary</h3>
+                <div class="order-items" id="checkout-items"></div>
+
+                <div class="order-totals">
+                    <div class="summary-row">
+                        <span>Subtotal:</span>
+                        <span id="checkout-subtotal">$0.00</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Shipping:</span>
+                        <span id="checkout-shipping">$9.99</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Tax (10%):</span>
+                        <span id="checkout-tax">$0.00</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total:</span>
+                        <span id="checkout-total">$0.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <button class="place-order-btn" id="place-order-btn">Place Order</button>
+        </div>
+    </div>
+</div>
+
+<!-- Order Confirmation Page -->
+<div id="confirmation-page" class="shop-page">
+    <div class="confirmation-content">
+        <div class="confirmation-icon">✓</div>
+        <h2>Order Confirmed!</h2>
+        <p class="confirmation-message">Thank you for your purchase. Your order has been successfully placed.</p>
+
+        <div class="order-details">
+            <h3>Order Details</h3>
+            <div class="order-number">Order #<span id="order-number"></span></div>
+            <div class="order-email">Confirmation sent to: <span id="confirmation-email"></span></div>
+        </div>
+
+        <div class="confirmation-actions">
+            <button class="back-btn" id="continue-shopping-btn">Continue Shopping</button>
+        </div>
+    </div>
+</div>

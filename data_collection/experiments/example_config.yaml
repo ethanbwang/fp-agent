@@ -1,0 +1,94 @@
+experiments:
+  - experiment_name: "Atlas forums"  # Metadata
+    experiment_description: "Atlas forums task"  # Metadata
+    num_trials: 1
+    task_runner: "atlas"
+    task_runner_args:
+      task_name: "Forums task"  # Metadata
+      website_version: "<website_version>"
+      webpage: "forums"
+      save_path: "results/example.json"
+    prompt_path: "prompts/forums.txt"
+  - experiment_name: "Comet forums"  # Metadata
+    experiment_description: "Comet forums task"  # Metadata
+    num_trials: 1
+    task_runner: "comet"
+    task_runner_args:
+      task_name: "Forums task"  # Metadata
+      website_version: "<website_version>"
+      save_path: "results/example.json"
+      webpage: "forums"
+    prompt_path: "prompts/forums.txt"
+  - experiment_name: "Skyvern Forums"  # Metadata
+    experiment_description: "Skyvern forums task"  # Metadata
+    num_trials: 1
+    task_runner: "skyvern"
+    task_runner_args:
+      task_name: "Forums task"  # Metadata
+      interface: "Script"  # Metadata
+      llm_model: "gpt-5"
+      browser_type: "Playwright Chromium"  # Metadata
+      headful: true  # Metadata
+      website_version: "<website_version>"
+      website_url: "https://<domain>/<website_version>/forums"
+      save_path: "results/example.json"
+    prompt_path: "prompts/forums.txt"
+  - experiment_name: "Browser Use Forums"  # Metadata
+    experiment_description: "Browser Use forums task"  # Metadata
+    num_trials: 1
+    task_runner: "browseruse"
+    task_runner_args:
+      task_name: "Forums task"  # Metadata
+      interface: "Agent"  # Metadata
+      llm_model: "gpt-5"
+      browser_type: "Playwright Chromium"  # Metadata
+      headful: true  # Metadata
+      website_version: "<website_version>"
+      save_path: "results/example.json"
+    prompt_path: "prompts/forums.txt"
+  - experiment_name: "ChatGPT Agent Mode forums"  # Metadata
+    experiment_description: "ChatGPT Agent Mode forums task"  # Metadata
+    num_trials: 1
+    task_runner: "chrome"
+    task_runner_args:
+      task_name: "Forums task"  # Metadata
+      ai_platform: "ChatGPT"  # Metadata
+      interface: "Agent Mode"  # Metadata
+      llm_model: "gpt-5"  # Metadata
+      website_version: "<website_version>"
+      save_path: "results/example.json"
+      agent: "chatgpt"
+      webpage: "forums"
+    prompt_path: "prompts/forums.txt"
+  - experiment_name: "Claude forums"  # Metadata
+    experiment_description: "Claude forums task"  # Metadata
+    num_trials: 1
+    task_runner: "chrome"
+    task_runner_args:
+      task_name: "Forums task"  # Metadata
+      ai_platform: "Claude"  # Metadata
+      interface: "Agent"  # Metadata
+      llm_model: "N/A"  # Metadata
+      website_version: "<website_version>"
+      save_path: "results/example.json"
+      agent: "claude"
+      webpage: "forums"
+    prompt_path: "prompts/forums.txt"
+  - experiment_name: "Manus forums"  # Metadata
+    experiment_description: "Manus forums task"  # Metadata
+    num_trials: 1
+    task_runner: "chrome"
+    task_runner_args:
+      task_name: "Flight-booking task"  # Metadata
+      ai_platform: "Manus"  # Metadata
+      interface: "Agent"  # Metadata
+      llm_model: "N/A"  # Metadata
+      website_version: "<website_version>"
+      save_path: "results/example.json"
+      agent: "manus"
+      webpage: "forums"
+    prompt_path: "prompts/forums.txt"
+timezone:  # Not used
+  - "los angeles"
+screen_res:  # Not used
+  - "1440x900"

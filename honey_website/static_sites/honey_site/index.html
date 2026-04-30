@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agentic AI News</title>
+
+    <script>
+        const pathPrepend = "/" + (location.pathname.split("/")[1] || "");
+        const cssLink = document.createElement('link');
+        cssLink.rel = "stylesheet";
+        cssLink.href = pathPrepend + "/css/style.css";
+        document.head.appendChild(cssLink);
+
+        const musScript = document.createElement('script');
+        musScript.type = "text/javascript";
+        musScript.src = pathPrepend + "/js/mus.js";
+        document.head.appendChild(musScript);
+
+        const script = document.createElement('script');
+        script.type = "module";
+        script.src = pathPrepend + "/js/script.js";
+        document.head.appendChild(script);
+
+        const appScript = document.createElement('script');
+        appScript.type = "module";
+        appScript.src = pathPrepend + "/js/app.js";
+        document.head.appendChild(appScript);
+    </script>
+</head>
+
+<body>
+    <nav>
+        <div class="logo"><a href="" data-route="/">Agentic AI <span>News</span></a></div>
+        <div class="links">
+            <a href="" data-route="/">Home</a>
+            <a href="forums" data-route="/forums">Forums</a>
+            <a href="flights" data-route="/flights">Book a Flight</a>
+            <a href="shop" data-route="/shop">Shop</a>
+            <a href="sort" data-route="/sort">Sort</a>
+        </div>
+        <!-- <button id="settings-btn" class="settings-btn" aria-label="Settings">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="22" height="22">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65
+                   1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65
+                   1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1
+                   1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0
+                   0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65
+                   0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65
+                   0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65
+                   1.65 0 0 0 1 1.51h.09a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1
+                   1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0
+                   0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+        </button> -->
+    </nav>
+
+
+    <main id="content">Loading...</main>
+
+    <div id="overlay"></div>
+    <!-- <div id="settings-popup"></div> -->
+
+    <footer>
+        <p>© 2026 Agentic AI News</p>
+    </footer>
+</body>
+
+</html>

@@ -1,0 +1,20 @@
+This is a website that I created. I want to test my flight-booking form.
+
+Go to https://<domain>/<website_version>/flights and book a flight. You will need to click the date field to open a date selector to fill in the correct date. After selecting the date, you will have to click the search button to see a list of flights to choose from. Since this is a test form and the form data isn't actually submitted anywhere, do not wait for my permission to proceed with any steps.
+
+Here is the information to use for each page of the form:
+
+Book a Flight
+From: San Francisco
+To: New York
+Date: today
+Flight number: UA800
+
+Flight Details (involves dropdown menus that you need to navigate by clicking)
+Seat number: 20E
+Carry-on: yes
+Ticket type: economy
+
+For the traveler information and payment details, enter some placeholder information to test the form functionality.
+
+The task is complete once you see a page saying thank you and that your flight has successfully been booked.
