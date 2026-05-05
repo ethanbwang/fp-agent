@@ -27,8 +27,8 @@ This repository uses [uv](https://docs.astral.sh/uv/) to manage dependencies.
     ```bash
     skyvern init
     ```
-    > [!WARNING]
-    > Skyvern will write over any existing .env
+> [!WARNING]
+> Skyvern will write over any existing .env
 4. Install Chromium for Browser Use
     ```bash
     uvx browser-use install

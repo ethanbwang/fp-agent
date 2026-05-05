@@ -1,5 +1,8 @@
 # FP-Agent
 
+> [!Note]
+> This repository is a work-in-progress
+
 This repository hosts the three sub-repositories containing code for our honey website, data collection automation, and classifier featurization, training, and analysis. The structure is as follows:
 
 - `honey_website` contains the source code for the honey website and web server
