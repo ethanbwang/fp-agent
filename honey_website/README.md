@@ -1,6 +1,9 @@
 # Honey Website
 
-This repository contains source code to deploy the honey website on Heroku.
+This repository contains source code to deploy the honey website used for FP-Agent on Heroku.
+The honey website is located in [static_sites/](./static_sites) and the web server code is in [server.py](server.py) and [util/](./util).
+
+The design of this honey website is largely based on the honey website used in FP-Inconsistent [[paper]](https://dl.acm.org/doi/10.1145/3730567.3732919) [[repo]](https://github.com/hariv/fp_inconsistent).
 
 ## Requirements
 
@@ -21,7 +24,7 @@ This repository uses [uv](https://docs.astral.sh/uv/) to manage dependencies.
     uv sync
     ```
 3. If setting up PostgreSQL database, follow [Database Tables](#database-tables)
-4. Download `.mmdb` files from [MaxMind](https://dev.maxmind.com/geoip/geolite2-free-geolocation-data/#integrating-geolite-databases-and-web-services) into `util/` and update the placeholder within `util/requests.py`
+4. Download `.mmdb` files from [MaxMind](https://dev.maxmind.com/geoip/geolite2-free-geolocation-data/#integrating-geolite-databases-and-web-services) into [util/](./util) and update the placeholder within [util/requests.py](./util/requests.py).
 
 ### Environment Variables
 
@@ -32,7 +35,7 @@ This repository uses [uv](https://docs.astral.sh/uv/) to manage dependencies.
 ### IP Addresses
 
 - We use GeoLite2 to store ASNs and location information from IP addresses and obtain IP address.
-- The honey site does not store IP addresses or ASN/location data when `anonymized`.
+- The honey site does not store IP addresses or ASN/location data when anonymity is specified.
 
 ### Database Tables
 
@@ -96,5 +99,5 @@ CREATE TABLE experiment_times (
 
 ### Creating Multiple Website Versions
 
-- Create a text file, `versions.txt` at the root directory of this repository where each line contains a random string of size 10.
-- Deploying the honey site will automatically result in `<domain_name>/<version_name>/` being deployed.
+- Create a text file named `versions.txt` at the repository root, where each line contains a 10-character random string.
+- Each random version will automatically be deployed at `<domain_name>/<version>/`.

@@ -18,6 +18,7 @@ class Request:
         self.UNKNOWN_STR = "unknown"
         self.log_request_query = "INSERT INTO public.requests (endpoint, req_type, req_headers, req_body, website_version, req_ts) VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP(5)) RETURNING req_id"
 
+        # Update these paths to the actual paths of the GeoLite2-City.mmdb and GeoLite2-ASN.mmdb files
         self.city_db = Reader("util/GeoLite2-City.mmdb")
         self.asn_db = Reader("util/GeoLite2-ASN.mmdb")
 
