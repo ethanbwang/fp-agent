@@ -222,3 +222,6 @@ har/
 log/
 temp/
 videos/
+
+# Honey website versions
+versions.txt
