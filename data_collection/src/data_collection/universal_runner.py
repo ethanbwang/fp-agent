@@ -3,6 +3,7 @@ import asyncio
 from datetime import datetime, timezone
 import json
 import os
+from pathlib import Path
 import time
 
 from browser_use import Agent, ChatOpenAI, ChatAnthropic
@@ -73,6 +74,10 @@ class TaskRunner(ABC):
 
         # Create file if it doesn't exist
         if not os.path.exists(self.save_path):
+            path = Path(self.save_path)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.touch()
+
             with open(self.save_path, "w") as f:
                 json.dump({}, f)
 

@@ -127,6 +127,7 @@ def run_experiment(experiment_config: ExperimentConfig) -> None:
         cur_time = time.time()
         while time.time() - cur_time < 30:
             try:
+                # Skyvern server runs on port 8000
                 socket.create_connection(("127.0.0.1", 8000))
                 break
             except ConnectionRefusedError:
@@ -151,6 +152,7 @@ def run_experiment(experiment_config: ExperimentConfig) -> None:
             print(f"Task {name} timed out")
 
     if skyvern_proc is not None:
+        # Cleanup Skyvern resources
         kill_process_tree(skyvern_proc)
 
 
@@ -207,7 +209,7 @@ if __name__ == "__main__":
         "--skip_existing",
         action="store_true",
         required=False,
-        help="Skip experiments that already have results",
+        help="Skip trials that already have results in the save path",
     )
     args = parser.parse_args()
     main(args)

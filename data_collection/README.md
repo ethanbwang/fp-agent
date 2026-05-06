@@ -1,8 +1,8 @@
 # Data Collection
 
-This repository contains source code for various task automation for FP-Agent.
+This repository contains source code for the task automation used to collect data for FP-Agent.
 
-As the automation is extremely system-dependent, expect to tweak some code (e.g., click coordinates, paths to applications). Please contact me if you need any help.
+As the automation is extremely system-dependent, expect to tweak some code (e.g., click coordinates, paths to browsing agent applications). Please contact me if you need any help.
 
 ## Requirements
 
@@ -28,7 +28,7 @@ This repository uses [uv](https://docs.astral.sh/uv/) to manage dependencies.
     skyvern init
     ```
 > [!WARNING]
-> Skyvern will write over any existing .env
+> Skyvern will write over any existing `.env` file in the repository root. Make sure to back up any existing `.env` file.
 4. Install Chromium for Browser Use
     ```bash
     uvx browser-use install
