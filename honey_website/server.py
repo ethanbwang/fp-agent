@@ -26,9 +26,9 @@ port = os.environ["PORT"]
 
 
 class HoneySiteRequestHandler(BaseHTTPRequestHandler):
-    def __init__(self, *args):
+    def __init__(self, *args: Any):
         self.static_sites_path = "static_sites"
-        self.news_site_path = "ai_news_site"
+        self.news_site_path = "honey_site"
         self.not_found_file = "404.html"
         self.index_file = "index.html"
         self.versions_file = "versions.txt"
@@ -50,7 +50,7 @@ class HoneySiteRequestHandler(BaseHTTPRequestHandler):
         self.exp_ids: dict[str, int] = {}
         BaseHTTPRequestHandler.__init__(self, *args)
 
-    def init_mime_type_map(self):
+    def init_mime_type_map(self) -> None:
         self.mime_type_map = {}
         self.mime_type_map[".jpg"] = "image/jpeg"
         self.mime_type_map[".jpeg"] = "image/jpeg"
@@ -60,30 +60,30 @@ class HoneySiteRequestHandler(BaseHTTPRequestHandler):
         self.mime_type_map[".js"] = "text/javascript"
         self.mime_type_map[".txt"] = "text/plain"
 
-    def load_version_names(self):
+    def load_version_names(self) -> list[str]:
         with open(self.versions_file) as f:
             version_names = f.read().splitlines()
         return version_names
 
-    def send_content_headers(self, content_type):
+    def send_content_headers(self, content_type: str) -> None:
         self.send_response(200)
         self.send_header("Access-Control-Allow-Credentials", "true")
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Content-Type", content_type)
         self.end_headers()
 
-    def read_file(self, file_path, binary=False):
+    def read_file(self, file_path: str, binary: bool = False) -> bytes | str:
         with open(file_path, "rb" if binary else "r") as f:
             content = f.read()
         return content
 
-    def is_valid_request_version(self, request_version):
+    def is_valid_request_version(self, request_version: str) -> bool:
         return request_version in self.version_names
 
-    def fetch_robots_txt(self):
+    def fetch_robots_txt(self) -> str:
         return self.read_file(self.robots_txt_file)
 
-    def fetch_image_content(self, path, request_version):
+    def fetch_image_content(self, path: str, request_version: str) -> bytes | None:
         if self.is_valid_request_version(request_version):
             path = path.replace("/" + request_version, "")
 
@@ -97,7 +97,11 @@ class HoneySiteRequestHandler(BaseHTTPRequestHandler):
                     self.send_content_headers(self.mime_type_map[image_extension])
                     return self.read_file(image_file, binary=True)
 
-    def fetch_static_content(self, path, request_version):
+    def fetch_static_content(self, path: str, request_version: str) -> tuple[str, bool]:
+        """
+        Fetches static content from the static sites path.
+        Returns a tuple containing the content and a boolean indicating if the request is valid.
+        """
         is_valid_request = False
 
         if self.is_valid_request_version(request_version):
@@ -175,8 +179,13 @@ class HoneySiteRequestHandler(BaseHTTPRequestHandler):
         )
 
     def log_improper_request_helper(
-        self, path, req_type, req_headers, req_body, website_version
-    ):
+        self,
+        path: str,
+        req_type: str,
+        req_headers: str,
+        req_body: str,
+        website_version: str,
+    ) -> int | None:
         improper_request = ImproperRequest()
         return improper_request.log_improper_request(
             path, req_type, req_headers, req_body, website_version
@@ -184,13 +193,13 @@ class HoneySiteRequestHandler(BaseHTTPRequestHandler):
 
     def log_request_helper(
         self,
-        path,
-        req_type,
-        req_headers,
-        req_body,
-        website_version,
+        path: str,
+        req_type: str,
+        req_headers: str,
+        req_body: str,
+        website_version: str,
         anonymize: bool = False,
-    ):
+    ) -> int | None:
         request = Request()
         return request.log_request(
             path,
@@ -208,28 +217,36 @@ class HoneySiteRequestHandler(BaseHTTPRequestHandler):
         is_start: bool,
         exp_id: int | None = None,
         webpage: str | None = None,
-    ):
+    ) -> int | None:
         experiment_time = ExperimentTime()
         if is_start:
             return experiment_time.log_start_experiment_time(website_version, req_id)
         else:
             return experiment_time.log_end_experiment_time(req_id, webpage, exp_id)
 
-    def log_task_completion(self, name, student_id, task, website_version):
+    def log_task_completion(
+        self, name: str, student_id: str, task: str, website_version: str
+    ) -> int | None:
         task_completion = TaskCompletion()
         return task_completion.log_task_completion(
             name, student_id, task, website_version
         )
 
     def log_task_completion_update(
-        self, old_name, old_student_id, name, student_id, task, website_version
-    ):
+        self,
+        old_name: str,
+        old_student_id: str,
+        name: str,
+        student_id: str,
+        task: str,
+        website_version: str,
+    ) -> int | None:
         task_completion = TaskCompletion()
         return task_completion.log_task_completion_update(
             old_name, old_student_id, name, student_id, task, website_version
         )
 
-    def do_OPTIONS(self):
+    def do_OPTIONS(self) -> None:
         self.send_response(200, "ok")
         self.send_header("Access-Control-Allow-Credentials", "true")
         self.send_header("Access-Control-Allow-Origin", "*")
@@ -237,13 +254,13 @@ class HoneySiteRequestHandler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Headers", "*")
         self.end_headers()
 
-    def generate_random_string(self):
+    def generate_random_string(self) -> str:
         random_size = 10
         return "".join(
             random.choices(string.ascii_uppercase + string.digits, k=random_size)
         )
 
-    def do_POST(self):
+    def do_POST(self) -> None:
         response_body = ""
         status_code = 200
         exp_id = None  # Store exp_id for /start and /end endpoint response header
@@ -378,7 +395,7 @@ class HoneySiteRequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(response_body)
 
-    def do_HEAD(self):
+    def do_HEAD(self) -> None:
         if len(self.path) > self.version_name_size + 1:
             request_version = self.path[: self.version_name_size + 1]
             website_version = request_version[1:]
@@ -391,7 +408,7 @@ class HoneySiteRequestHandler(BaseHTTPRequestHandler):
         self.send_content_headers(self.mime_type_map[".txt"])
         self.wfile.write(bytes(content, encoding="utf8"))
 
-    def do_GET(self):
+    def do_GET(self) -> None:
         if len(self.path) == self.version_name_size + 1:
             self.path = self.path + "/"
         if "?" in self.path:
@@ -440,7 +457,7 @@ class HoneySiteRequestHandler(BaseHTTPRequestHandler):
 class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
     daemon_threads = True
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any):
         super().__init__(*args, **kwargs)
         self.exp_ids: dict[str, int] = {}
         self.exp_ids_lock = threading.Lock()

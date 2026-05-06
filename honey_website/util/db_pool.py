@@ -29,13 +29,13 @@ def get_conn():
     return POOL.getconn()
 
 
-def put_conn(conn):
+def put_conn(conn) -> None:
     """Return a connection to the pool."""
     if POOL is not None and conn is not None:
         POOL.putconn(conn)
 
 
-def close_pool():
+def close_pool() -> None:
     """Close all connections (usually only on graceful shutdown)."""
     global POOL
     if POOL is not None:

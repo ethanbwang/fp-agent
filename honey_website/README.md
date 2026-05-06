@@ -30,10 +30,12 @@ This repository uses [uv](https://docs.astral.sh/uv/) to manage dependencies.
 `DATABASE_URL`: specifies the PostgreSQL database connection URL
 
 ### IP Addresses
+
 - We use GeoLite2 to store ASNs and location information from IP addresses and obtain IP address.
 - The honey site does not store IP addresses or ASN/location data when `anonymized`.
 
 ### Database Tables
+
 Create the following tables with the described columns:
 
 **requests**
@@ -93,5 +95,6 @@ CREATE TABLE experiment_times (
 ```
 
 ### Creating Multiple Website Versions
+
 - Create a text file, `versions.txt` at the root directory of this repository where each line contains a random string of size 10.
 - Deploying the honey site will automatically result in `<domain_name>/<version_name>/` being deployed.

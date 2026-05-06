@@ -15,8 +15,8 @@ class Request:
         self.HEADER_DELIMITER = ": "
         self.CITY_HEADER = "City"
         self.ASN_HEADER = "ASN"
-        self.GEOIP_HEADER = "GEOIP"
         self.UNKNOWN_STR = "unknown"
+        self.log_request_query = "INSERT INTO public.requests (endpoint, req_type, req_headers, req_body, website_version, req_ts) VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP(5)) RETURNING req_id"
 
         self.city_db = Reader("util/GeoLite2-City.mmdb")
         self.asn_db = Reader("util/GeoLite2-ASN.mmdb")
@@ -30,23 +30,10 @@ class Request:
         hash_object = hashlib.sha256(ip_val.encode())
         return hash_object.hexdigest()
 
-    def del_names(self, obj: object) -> None:
-        """Deletes the 'names' attribute from a City object's nested objects."""
-        if hasattr(obj, "names"):
-            delattr(obj, "names")
-
-        if hasattr(obj, "__dict__"):
-            for value in vars(obj).values():
-                self.del_names(value)
-
-            for name, value in obj.__class__.__dict__.items():
-                if isinstance(value, property):
-                    self.del_names(getattr(obj, name))
-
     async def anonymize_ip(self, req_headers: str, anonymize: bool = False) -> str:
         """
         Extracts the client IP address from req_headers and replaces it with
-        its hash.
+        its hash. Adds city and ASN headers if anonymize is False.
         """
         headers_list = req_headers.split("\n")
 
@@ -106,6 +93,8 @@ class Request:
             req_headers (str): Request headers
             req_body (str): Request body
             website_version (str): Website version
+            anonymize (bool): Whether to anonymize the IP address and add city
+                and ASN headers
 
         Returns:
             (int | None): Request ID
@@ -115,7 +104,7 @@ class Request:
         with db_transaction() as conn:
             cur = conn.cursor()
             cur.execute(
-                "INSERT INTO public.requests (endpoint, req_type, req_headers, req_body, website_version, req_ts) VALUES (%s, %s, %s, %s, %s, CURRENT_TIMESTAMP(5)) RETURNING req_id",
+                self.log_request_query,
                 (endpoint, req_type, req_headers, req_body, website_version),
             )
             row = cur.fetchone()
