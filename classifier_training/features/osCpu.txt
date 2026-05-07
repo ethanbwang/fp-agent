@@ -1,0 +1,8 @@
+Intel Mac OS X 10_15
+Intel Mac OS X 10_15_7
+Intel Mac OS X 10_6_2
+Linux
+Linux x86_64
+Windows NT 10.0
+Windows NT 10.0; Win64; x64
+Windows NT 6.2; Win64; x64

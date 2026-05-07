@@ -1,0 +1,9 @@
+Chrome PDF Plugin
+Chrome PDF Viewer
+Chromium PDF Plugin
+Chromium PDF Viewer
+Microsoft edge PDF Plugin
+Microsoft Edge PDF Viewer
+Native Client
+PDF Viewer
+WebKit built-in PDF

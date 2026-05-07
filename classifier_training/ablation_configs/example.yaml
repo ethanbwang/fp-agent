@@ -1,0 +1,14 @@
+work_dir: "ablation_results/example_ablation"
+# Processed (feature vector) data, not raw data
+dataset_file: "data/example_processed_dataset.json"
+# See common.py for function to create a dataset split
+split_file: "data/example_split.npz"
+feature_type: "COMBINED"  # BROWSER, BEHAVIORAL, COMBINED
+removed_classes: []  # List of classes to remove
+test_size: 0.2  # Test size for dataset split (percentage)
+validation_size: 0.0
+max_depth: 6
+n_estimators: 150
+learning_rate: 0.1
+random_state: 32
+max_steps: null  # null for no limit

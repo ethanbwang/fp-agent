@@ -1,0 +1,7 @@
+apple
+default
+min
+mono
+sans
+serif
+system

@@ -1,0 +1,4 @@
+__crWeb
+__gCrWeb
+chrome
+safari
