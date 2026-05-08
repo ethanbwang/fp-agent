@@ -130,32 +130,32 @@ def _get_pairs(
             remove_iqr_outliers(hold_latency_stdevs[agent])
         )
 
-    # interkey_latency_means["Claude"] = []
-    # interkey_latency_stdevs["Claude"] = []
-    # hold_latency_means["Claude"] = []
-    # hold_latency_stdevs["Claude"] = []
-    # for fvs in pipeline.dataset.data["Claude"].values():
-    #     if fvs["behavioral"][ikl_mean_idx] != -1:
-    #         interkey_latency_means["Claude"].append(fvs["behavioral"][ikl_mean_idx])
-    #     if fvs["behavioral"][ikl_stdev_idx] != -1:
-    #         interkey_latency_stdevs["Claude"].append(fvs["behavioral"][ikl_stdev_idx])
-    #     if fvs["behavioral"][hl_mean_idx] != -1:
-    #         hold_latency_means["Claude"].append(fvs["behavioral"][hl_mean_idx])
-    #     if fvs["behavioral"][hl_stdev_idx] != -1:
-    #         hold_latency_stdevs["Claude"].append(fvs["behavioral"][hl_stdev_idx])
+    interkey_latency_means["Claude"] = []
+    interkey_latency_stdevs["Claude"] = []
+    hold_latency_means["Claude"] = []
+    hold_latency_stdevs["Claude"] = []
+    for fvs in pipeline.dataset.data["Claude"].values():
+        if fvs["behavioral"][ikl_mean_idx] != -1:
+            interkey_latency_means["Claude"].append(fvs["behavioral"][ikl_mean_idx])
+        if fvs["behavioral"][ikl_stdev_idx] != -1:
+            interkey_latency_stdevs["Claude"].append(fvs["behavioral"][ikl_stdev_idx])
+        if fvs["behavioral"][hl_mean_idx] != -1:
+            hold_latency_means["Claude"].append(fvs["behavioral"][hl_mean_idx])
+        if fvs["behavioral"][hl_stdev_idx] != -1:
+            hold_latency_stdevs["Claude"].append(fvs["behavioral"][hl_stdev_idx])
 
-    # interkey_latency_means["Claude"] = np.array(
-    #     remove_iqr_outliers(interkey_latency_means["Claude"])
-    # )
-    # interkey_latency_stdevs["Claude"] = np.array(
-    #     remove_iqr_outliers(interkey_latency_stdevs["Claude"])
-    # )
-    # hold_latency_means["Claude"] = np.array(
-    #     remove_iqr_outliers(hold_latency_means["Claude"])
-    # )
-    # hold_latency_stdevs["Claude"] = np.array(
-    #     remove_iqr_outliers(hold_latency_stdevs["Claude"])
-    # )
+    interkey_latency_means["Claude"] = np.array(
+        remove_iqr_outliers(interkey_latency_means["Claude"])
+    )
+    interkey_latency_stdevs["Claude"] = np.array(
+        remove_iqr_outliers(interkey_latency_stdevs["Claude"])
+    )
+    hold_latency_means["Claude"] = np.array(
+        remove_iqr_outliers(hold_latency_means["Claude"])
+    )
+    hold_latency_stdevs["Claude"] = np.array(
+        remove_iqr_outliers(hold_latency_stdevs["Claude"])
+    )
 
     # Comet
     relevant_comet_data = {
@@ -456,11 +456,6 @@ def main():
     parser.add_argument("--split_file", type=str, required=True)
     parser.add_argument("--raw_data_file", type=str, required=True)
     args = parser.parse_args()
-
-    # TODO: Remove this
-    args.dataset_file = f"{PROJECT_ROOT}/data/11-4-2026_dataset_renamed.json"
-    args.split_file = f"{PROJECT_ROOT}/data/11-4-2026_split_renamed.npz"
-    args.raw_data_file = f"{PROJECT_ROOT}/data/11-4-2026_raw_dataset.json"
 
     mean_ci_and_std_analysis(args)
     print("--------------------------------")
