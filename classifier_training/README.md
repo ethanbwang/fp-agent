@@ -66,7 +66,7 @@ The raw data can be found at [https://osf.io/j6b5p/overview?view_only=ac4ad89fbd
     }
 ```
 
-The `source_file` key in `source` can be ignored; it is a legacy element.
+The `source_file` key in `source` can be ignored; it was used to help identify the trial during the study.
 
 ### Processed Data
 
@@ -85,3 +85,28 @@ The processed data can be found at [](). Helper functions are located in [common
     }, ...
 }
 ```
+
+## Training
+
+To train the classifier, use `TrainingPipeline` in [classifier.py](src/classifier_training/classifier.py).
+
+```python
+from classifier_training.classifier import TrainingPipeline
+
+training_pipeline = TrainingPipeline(
+    dataset_file=<dataset_path>,
+    split_file=<split_path>,
+    feature_type=<feature_type>,
+    removed_classes=<removed_classes>,
+)
+
+training_pipeline.train_model(
+    model_file=<model_file>,
+    max_depth=<max_depth>,
+    learning_rate=<learning_rate>,
+    n_estimators=<n_estimators>,
+    random_state=<random_state>,
+)
+```
+
+An example use case is in [ablation_trainer.py](src/classifier_training/ablation_trainer.py).
