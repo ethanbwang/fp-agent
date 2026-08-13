@@ -2,12 +2,11 @@ from collections import defaultdict
 import os
 import json
 
-
 from dotenv import load_dotenv
 
 load_dotenv()
 
-
+import joblib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -16,12 +15,16 @@ import pandas as pd
 import shap
 from sklearn.metrics import (
     accuracy_score,
+    average_precision_score,
     precision_score,
     recall_score,
     f1_score,
+    precision_recall_fscore_support,
+    roc_auc_score,
     confusion_matrix,
     ConfusionMatrixDisplay,
 )
+from sklearn.model_selection import train_test_split
 import xgboost as xgb
 
 from classifier_training.types import FeatureType
@@ -818,3 +821,526 @@ class TrainingPipeline:
                 f,
                 indent=2,
             )
+
+
+class OVRTrainingPipeline:
+    """
+    To train a classifier without holdout class:
+
+    pipeline = OVRTrainingPipeline(
+        dataset_file="data/dataset.json",
+        split_file="data/split.json",
+        feature_type=FeatureType.BEHAVIORAL,
+    )
+
+    pipeline.get_X_vectors()
+
+    pipeline.train_ovr_manual(model_file="models/model.pkl")
+
+    pipeline.evaluate_ovr_manual()
+
+    ---
+
+    To run the experiment, use scripts/holdout_experiments.py.
+    """
+
+    def __init__(
+        self,
+        dataset_file: str,
+        feature_type: FeatureType,
+        removed_classes: list[str] = [],
+        holdout_classes: list[str] = [],
+        seed: int = 32,
+    ):
+        self.dataset_file = dataset_file
+        self.holdout_classes = holdout_classes
+        self.removed_classes = removed_classes
+        self.seed = seed
+        self.dataset = load_dataset(dataset_file, removed_classes)
+        self.holdout_dataset = None
+
+        if holdout_classes:
+            # Check if holdout class is in dataset
+            assert all(
+                holdout_class in self.dataset.data.keys()
+                for holdout_class in holdout_classes
+            ), "holdout class not found in dataset"
+
+            # Create holdout dataset and get dataset split
+            self.holdout_dataset = {
+                k: v for k, v in self.dataset.data.items() if k in holdout_classes
+            }
+            if feature_type == FeatureType.BROWSER:
+                self.X_holdout_vectors = []
+                for fv_list in self.holdout_dataset.values():
+                    for fvs in fv_list.values():
+                        self.X_holdout_vectors.append(fvs.get("fpjs"))
+            elif feature_type == FeatureType.BEHAVIORAL:
+                self.X_holdout_vectors = []
+                for fv_list in self.holdout_dataset.values():
+                    for fvs in fv_list.values():
+                        self.X_holdout_vectors.append(fvs.get("behavioral"))
+            elif feature_type == FeatureType.COMBINED:
+                self.X_holdout_vectors = []
+                for fv_list in self.holdout_dataset.values():
+                    for fvs in fv_list.values():
+                        self.X_holdout_vectors.append(
+                            fvs.get("fpjs") + fvs.get("behavioral")
+                        )
+
+            self.y_holdout_labels = [
+                "unseen" for _ in range(len(self.X_holdout_vectors))
+            ]
+
+            # Remove holdout class from dataset
+            self.dataset.data = {
+                k: v for k, v in self.dataset.data.items() if k not in holdout_classes
+            }
+
+        # Get X y split labeled for dataset
+        self.X_train, self.X_val, self.X_test, self.y_train, self.y_val, self.y_test = (
+            self.dataset.get_split(str_label=True)
+        )
+        self.feature_type = feature_type
+
+        self.removed_indices: list[int] = []
+        self.X_train_vectors = None
+        self.X_val_vectors = None
+        self.X_test_vectors = None
+        self.models: dict[str, xgb.XGBClassifier] = {}
+        self.y_pred = None
+
+    def get_X_vectors(self, removed_indices: list[int] = []) -> None:
+        """
+        Updates removed indices and feature vectors based on the removed indices.
+        """
+
+        self.removed_indices = removed_indices
+
+        X_train_vectors, X_val_vectors, X_test_vectors = get_feature_vectors(
+            self.X_train, self.X_val, self.X_test, self.feature_type
+        )
+
+        self.X_train_vectors = (
+            np.delete(X_train_vectors, removed_indices, axis=1)
+            if X_train_vectors is not None and len(X_train_vectors) > 0
+            else None
+        )
+        self.X_val_vectors = (
+            np.delete(X_val_vectors, removed_indices, axis=1)
+            if X_val_vectors is not None and len(X_val_vectors) > 0
+            else None
+        )
+        self.X_test_vectors = (
+            np.delete(X_test_vectors, removed_indices, axis=1)
+            if X_test_vectors is not None and len(X_test_vectors) > 0
+            else None
+        )
+
+        # Also remove removed indices from holdout vectors
+        if (
+            getattr(self, "X_holdout_vectors", None) is not None
+            and len(self.X_holdout_vectors) > 0
+        ):
+            self.X_holdout_vectors = np.delete(
+                np.asarray(self.X_holdout_vectors), removed_indices, axis=1
+            )
+
+    def train_ovr_manual(
+        self,
+        model_file: str,
+        max_depth: int = 6,
+        learning_rate: float = 0.1,
+        n_estimators: int = 150,
+        use_scale_pos_weight: bool = True,
+    ) -> None:
+        """Train one binary XGBoost classifier per class (manual OvR)."""
+
+        self.classes = sorted(self.dataset.data.keys())
+        y_train = np.asarray(self.y_train)
+
+        for cls in self.classes:
+            y_bin = (y_train == cls).astype(int)
+            n_pos = int(y_bin.sum())
+            n_neg = int(len(y_bin) - n_pos)
+            if n_pos == 0:
+                raise ValueError(
+                    f"Class {cls!r} has no positive samples in training data."
+                )
+
+            params = dict(
+                max_depth=max_depth,
+                learning_rate=learning_rate,
+                n_estimators=n_estimators,
+                random_state=self.seed,
+                eval_metric="logloss",
+            )
+            if use_scale_pos_weight:
+                params["scale_pos_weight"] = n_neg / n_pos
+
+            model = xgb.XGBClassifier(**params)
+            model.fit(self.X_train_vectors, y_bin)
+            self.models[cls] = model
+
+        if os.path.dirname(model_file) != "":
+            os.makedirs(os.path.dirname(model_file), exist_ok=True)
+        joblib.dump({"models": self.models, "classes": self.classes}, model_file)
+
+    def load_ovr_manual(self, model_file: str) -> None:
+        payload = joblib.load(model_file)
+        self.models = payload["models"]
+        self.classes = payload["classes"]
+
+    def raw_ovr_probs(self, X) -> np.ndarray:
+        """Unnormalized per-class binary probabilities, shape (n_samples, n_classes)."""
+
+        if not getattr(self, "models", None):
+            raise ValueError("Model is not trained. Call train_ovr_manual() first.")
+        return np.column_stack(
+            [self.models[c].predict_proba(X)[:, 1] for c in self.classes]
+        )
+
+    def predict_ovr_manual(
+        self, X, threshold: float = 0.5, unseen_label: str = "unseen"
+    ):
+        """Argmax over binary classifiers, rejecting to `unseen_label` if none fire."""
+
+        probs = self.raw_ovr_probs(X)
+        preds = np.array(
+            [
+                (
+                    unseen_label
+                    if row.max() < threshold
+                    else self.classes[int(np.argmax(row))]
+                )
+                for row in probs
+            ],
+            dtype=str,
+        )
+        return preds, probs
+
+    def evaluate_ovr_manual_holdout(
+        self,
+        X=None,
+        y=None,
+        threshold: float = 0.5,
+        unseen_label: str = "unseen",
+    ) -> dict:
+        """
+        Closed-set OvR evaluation using argmax over binary classifiers with
+        thresholded rejection.
+        """
+        X = self.X_test_vectors if X is None else X
+        y = np.asarray(self.y_test if y is None else y, dtype=str)
+
+        preds, _ = self.predict_ovr_manual(
+            X, threshold=threshold, unseen_label=unseen_label
+        )
+
+        labels = self.classes
+
+        precision_arr, recall_arr, f1_arr, support_arr = (
+            precision_recall_fscore_support(
+                y, preds, labels=labels, average=None, zero_division=0
+            )
+        )
+
+        results = {
+            "overall": {
+                "accuracy": accuracy_score(y, preds),
+                "precision": precision_score(
+                    y, preds, average="macro", zero_division=0
+                ),
+                "recall": recall_score(y, preds, average="macro", zero_division=0),
+                "f1": f1_score(y, preds, average="macro", zero_division=0),
+                "rejection_rate": float(np.mean(preds == unseen_label)),
+            },
+            "per_class": {
+                label: {
+                    "precision": float(precision_arr[i]),
+                    "recall": float(recall_arr[i]),
+                    "f1": float(f1_arr[i]),
+                    "support": int(support_arr[i]),
+                }
+                for i, label in enumerate(labels)
+            },
+            "confusion_matrix": confusion_matrix(y, preds, labels=labels),
+            "labels": labels,
+        }
+        return results
+
+    def evaluate_ovr_manual(
+        self,
+        X=None,
+        y=None,
+    ) -> dict:
+        """Closed-set OvR evaluation using argmax over binary classifiers."""
+
+        X = self.X_test_vectors if X is None else X
+        y = np.asarray(self.y_test if y is None else y, dtype=str)
+
+        class_indices = self.classes
+
+        probs = self.raw_ovr_probs(X)
+        preds = np.array(
+            [class_indices[int(np.argmax(row))] for row in probs], dtype=str
+        )
+
+        precision_arr, recall_arr, f1_arr, support_arr = (
+            precision_recall_fscore_support(
+                y, preds, labels=class_indices, average=None, zero_division=0
+            )
+        )
+
+        return {
+            "overall": {
+                "accuracy": accuracy_score(y, preds),
+                "precision": precision_score(
+                    y, preds, average="macro", zero_division=0
+                ),
+                "recall": recall_score(y, preds, average="macro", zero_division=0),
+                "f1": f1_score(y, preds, average="macro", zero_division=0),
+            },
+            "per_class": {
+                # idx_to_name[label]: {
+                label: {
+                    "precision": float(precision_arr[i]),
+                    "recall": float(recall_arr[i]),
+                    "f1": float(f1_arr[i]),
+                    "support": int(support_arr[i]),
+                }
+                for i, label in enumerate(class_indices)
+            },
+            "confusion_matrix": confusion_matrix(y, preds, labels=class_indices),
+            "labels": class_indices,
+        }
+
+    def fit_with_threshold(
+        self,
+        model_file: str,
+        false_reject_budget: float = 0.05,
+        val_frac: float = 0.2,
+        **train_kwargs,
+    ) -> float:
+        """
+        Select a rejection threshold without shrinking the training set.
+
+        A temporary model is fit on a subset of the training data and scored on the
+        remainder to pick the threshold; the returned model is then refit on the full
+        training split.
+        """
+
+        X_full, y_full = self.X_train_vectors, self.y_train
+
+        X_tr, X_val, y_tr, _ = train_test_split(
+            X_full,
+            y_full,
+            test_size=val_frac,
+            stratify=y_full,
+            random_state=self.seed,
+        )
+
+        # Fit temporary model on subset of training data to get threshold
+        self.X_train_vectors, self.y_train = X_tr, y_tr
+        self.train_ovr_manual("/tmp/ovr_threshold_tmp.joblib", **train_kwargs)
+        val_scores = self.raw_ovr_probs(X_val).max(axis=1)
+        self.threshold = float(np.quantile(val_scores, false_reject_budget))
+
+        # Refit final model on the full training split
+        self.X_train_vectors, self.y_train = X_full, y_full
+        self.train_ovr_manual(model_file, **train_kwargs)
+
+        self.false_reject_budget = false_reject_budget
+        return self.threshold
+
+    def operating_point(
+        self,
+        threshold: float | None = None,
+        unseen_label: str = "unseen",
+    ) -> dict:
+        """
+        Known-class cost and unseen-detection performance at a single threshold.
+
+        Known side: test split (holdout classes already excluded).
+        Unseen side: all holdout-class samples.
+        """
+
+        if threshold is None:
+            threshold = getattr(self, "threshold", None)
+            if threshold is None:
+                raise ValueError("No threshold. Call fit_with_threshold() first.")
+
+        if self.X_holdout_vectors is None or len(self.X_holdout_vectors) == 0:
+            raise ValueError(
+                "No holdout data. Construct the pipeline with holdout_classes."
+            )
+
+        y_known = np.asarray(self.y_test, dtype=object)
+
+        known_preds, _ = self.predict_ovr_manual(
+            self.X_test_vectors, threshold=threshold, unseen_label=unseen_label
+        )
+        unseen_preds, _ = self.predict_ovr_manual(
+            self.X_holdout_vectors, threshold=threshold, unseen_label=unseen_label
+        )
+        known_preds = known_preds.astype(object)
+        unseen_preds = unseen_preds.astype(object)
+
+        # Known-class metrics scored over trained classes only, so they stay
+        # directly comparable to the closed-set numbers; a rejected known sample
+        # simply misses its class and lowers that class's recall
+        known_accuracy = float(np.mean(known_preds == y_known))
+        known_macro_f1 = float(
+            f1_score(
+                y_known,
+                known_preds,
+                labels=self.classes,
+                average="macro",
+                zero_division=0,
+            )
+        )
+        false_reject_rate = float(np.mean(known_preds == unseen_label))
+
+        unseen_recall = float(np.mean(unseen_preds == unseen_label))
+
+        # Precision needs both sides pooled and depends on the known/unseen ratio
+        all_preds = np.concatenate([known_preds, unseen_preds])
+        all_true = np.concatenate(
+            [y_known, np.full(len(unseen_preds), unseen_label, dtype=object)]
+        )
+        flagged = all_preds == unseen_label
+        unseen_precision = (
+            float(np.mean(all_true[flagged] == unseen_label)) if flagged.any() else 0.0
+        )
+
+        return {
+            "threshold": float(threshold),
+            "false_reject_budget": getattr(self, "false_reject_budget", None),
+            "known_accuracy": known_accuracy,
+            "known_macro_f1": known_macro_f1,
+            "false_reject_rate": false_reject_rate,
+            "unseen_recall": unseen_recall,
+            "unseen_precision": unseen_precision,
+            "unseen_prevalence": float(
+                len(unseen_preds) / (len(known_preds) + len(unseen_preds))
+            ),
+            "n_known": int(len(known_preds)),
+            "n_unseen": int(len(unseen_preds)),
+        }
+
+    def run_holdout_experiment(
+        self,
+        model_file: str,
+        use_scale_pos_weight: bool = True,
+        thresholds=np.linspace(0.1, 0.95, 18),
+        unseen_label: str = "unseen",
+    ) -> dict:
+        """Train excluding `held_out_agent`, then sweep threshold over known vs unseen."""
+
+        self.train_ovr_manual(model_file, use_scale_pos_weight=use_scale_pos_weight)
+
+        curve = []
+        for t in thresholds:
+            known = self.evaluate_ovr_manual_holdout(
+                self.X_test_vectors, self.y_test, threshold=t, unseen_label=unseen_label
+            )
+            unseen_preds, _ = self.predict_ovr_manual(
+                self.X_holdout_vectors, threshold=t, unseen_label=unseen_label
+            )
+            curve.append(
+                {
+                    "threshold": float(t),
+                    "known_accuracy": known["overall"]["accuracy"],
+                    "known_macro_f1": known["overall"]["f1"],
+                    "unseen_recall": float(np.mean(unseen_preds == unseen_label)),
+                }
+            )
+        return {"curve": curve, "held_out_classes": self.holdout_classes}
+
+    def get_auroc(self):
+        known_scores = self.raw_ovr_probs(self.X_test_vectors).max(axis=1)
+        unseen_scores = self.raw_ovr_probs(self.X_holdout_vectors).max(axis=1)
+
+        scores = np.concatenate([known_scores, unseen_scores])
+        is_known = np.concatenate(
+            [np.ones(len(known_scores)), np.zeros(len(unseen_scores))]
+        )
+
+        return roc_auc_score(is_known, scores)
+
+    def open_set_auprc(self, use_margin: bool = False) -> dict:
+        """AUPRC for known-vs-unseen detection, reported both directions."""
+
+        if use_margin:
+            # Unbounded margins avoid sigmoid saturation
+            known_scores = np.column_stack(
+                [
+                    self.models[c].predict(self.X_test_vectors, output_margin=True)
+                    for c in self.classes
+                ]
+            ).max(axis=1)
+            unseen_scores = np.column_stack(
+                [
+                    self.models[c].predict(self.X_holdout_vectors, output_margin=True)
+                    for c in self.classes
+                ]
+            ).max(axis=1)
+        else:
+            known_scores = self.raw_ovr_probs(self.X_test_vectors).max(axis=1)
+            unseen_scores = self.raw_ovr_probs(self.X_holdout_vectors).max(axis=1)
+
+        scores = np.concatenate([known_scores, unseen_scores])
+
+        # Set unseen as positive class
+        # Low max-probability indicates novelty, so negate the score
+        y_unseen = np.concatenate(
+            [np.zeros(len(known_scores)), np.ones(len(unseen_scores))]
+        )
+        auprc_unseen = average_precision_score(y_unseen, -scores)
+
+        # Set known as positive class
+        y_known = 1 - y_unseen
+        auprc_known = average_precision_score(y_known, scores)
+
+        # Baselines: AUPRC of a random classifier = positive class prevalence
+        prevalence_unseen = y_unseen.mean()
+        prevalence_known = y_known.mean()
+
+        return {
+            "auprc_unseen_positive": float(auprc_unseen),
+            "auprc_known_positive": float(auprc_known),
+            "baseline_unseen": float(prevalence_unseen),
+            "baseline_known": float(prevalence_known),
+            "n_known": len(known_scores),
+            "n_unseen": len(unseen_scores),
+        }
+
+    def auprc_at_prevalence(self, target_prev, n_boot=200):
+        """AUPRC with unseen subsampled to `target_prev` fraction of the test set."""
+
+        rng = np.random.default_rng(self.seed)
+        known_scores = self.raw_ovr_probs(self.X_test_vectors).max(axis=1)
+        unseen_scores = self.raw_ovr_probs(self.X_holdout_vectors).max(axis=1)
+        n_known = len(known_scores)
+        n_unseen_target = int(round(target_prev * n_known / (1 - target_prev)))
+
+        if n_unseen_target > len(unseen_scores):
+            raise ValueError(
+                f"Need {n_unseen_target} unseen samples for prevalence {target_prev}, "
+                f"only have {len(unseen_scores)}"
+            )
+
+        vals = []
+        for _ in range(n_boot):
+            idx = rng.choice(len(unseen_scores), size=n_unseen_target, replace=False)
+            s = np.concatenate([known_scores, unseen_scores[idx]])
+            y = np.concatenate([np.zeros(n_known), np.ones(n_unseen_target)])
+            vals.append(average_precision_score(y, -s))
+
+        return {
+            "target_prevalence": target_prev,
+            "n_unseen_used": n_unseen_target,
+            "auprc_mean": float(np.mean(vals)),
+            "auprc_std": float(np.std(vals)),
+            "baseline": target_prev,
+        }
