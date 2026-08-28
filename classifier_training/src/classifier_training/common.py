@@ -31,6 +31,17 @@ def get_dataset(
 ) -> AgentClassificationDataset:
     """
     Create dataset from the list of files in `datafiles` and save to `output_file`. Returns the dataset.
+
+    Args:
+        result_files (list[str]): List of result files to process.
+        output_file (str): Path to save the dataset.
+        raw_data_file (str | None): Path to raw data file.
+        overwrite_raw_cache (bool): Whether to overwrite the raw data cache.
+        check_visitor_id (bool): Whether to check the visitor id (for Human data).
+            Essentially acts as a filter to exclude any noise in the middle of
+            the session.
+    Returns:
+        (AgentClassificationDataset): The dataset created from the result files.
     """
     data_processor = DataProcessor()
     abs_raw_data_path = (
