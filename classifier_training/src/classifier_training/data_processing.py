@@ -172,14 +172,18 @@ class AgentClassificationDataset:
         """Saves dataset to a JSON string."""
         return orjson.dumps({"data": self.data, "label_mapping": self.label_mapping})
 
-    def get_X_y(self, labeled: bool = False) -> tuple[np.ndarray, np.ndarray]:
+    def get_X_y(
+        self, labeled: bool = False, str_label: bool = False
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Returns a tuple of (X, y)."""
         X = []
         y = []
         for class_label, data in self.data.items():
             for source, fvs in data.items():
                 X.append((source, fvs)) if labeled else X.append(fvs)
-                y.append(self.label_mapping[class_label])
+                y.append(
+                    self.label_mapping[class_label] if not str_label else class_label
+                )
         return np.array(X), np.array(y)
 
     def get_split(
@@ -188,12 +192,16 @@ class AgentClassificationDataset:
         test_size: float = 0.2,
         random_state: int = 32,
         labeled: bool = False,
+        str_label: bool = False,
     ) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
         Returns a tuple of (X_train, X_val, X_test, y_train, y_val, y_test).
-        If validation_size is 0, returns (X_train, X_test, y_train, y_test).
         """
-        X, y = self.get_X_y(labeled=labeled)
+        assert (
+            validation_size + test_size < 1.0
+        ), f"validation_size + test_size must be < 1.0, got {validation_size + test_size}"
+
+        X, y = self.get_X_y(labeled=labeled, str_label=str_label)
 
         X_temp, X_test, y_temp, y_test = train_test_split(
             X, y, test_size=test_size, random_state=random_state, stratify=y
@@ -294,7 +302,8 @@ class DataProcessor:
         for raw_behavioral_data in raw_data.behavioral_data:
             req_body = orjson.loads(raw_behavioral_data.req_body)
             if "eventFrames" in req_body:
-                # Convert lists to tuples and preprocess (in case of old data format)
+                # Convert lists to tuples and preprocess (in case of old data
+                # format), probably not necessary but didn't check.
                 event_frames = [
                     preprocess_tuple(tuple(event)) for event in req_body["eventFrames"]
                 ]
