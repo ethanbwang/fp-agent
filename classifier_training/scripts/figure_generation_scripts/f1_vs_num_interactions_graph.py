@@ -13,7 +13,7 @@ COLORS = [
 ]
 
 
-def parse_args() -> argparse.Namespace:
+def main() -> None:
     parser = argparse.ArgumentParser(
         description="Plot F1 score against k for four CSV files."
     )
@@ -21,7 +21,6 @@ def parse_args() -> argparse.Namespace:
         "csv_files",
         nargs=4,
         type=Path,
-        metavar="CSV",
         help="Four CSV files containing 'k' and 'F1' columns",
     )
     parser.add_argument(
@@ -30,16 +29,11 @@ def parse_args() -> argparse.Namespace:
         help="Maximum number of interactions",
     )
     parser.add_argument(
-        "--output_file",
-        type=Path,
-        metavar="OUTPUT",
-        help="Path where the graph will be saved (for example, graph.png)",
+        "--out_file",
+        type=str,
+        help="Path where the graph will be saved",
     )
-    return parser.parse_args()
-
-
-def main() -> None:
-    args = parse_args()
+    args = parser.parse_args()
 
     with plt.style.context(["science"]):
         fig, ax = plt.subplots(figsize=(3.33, 2))
@@ -66,10 +60,8 @@ def main() -> None:
         ax.legend(loc="center left", bbox_to_anchor=(1.02, 0.5))
         ax.grid(alpha=0.3)
 
-        args.output_file.parent.mkdir(parents=True, exist_ok=True)
         fig.tight_layout()
-        fig.savefig(args.output_file, dpi=300, bbox_inches="tight")
-        plt.close(fig)
+        fig.savefig(args.out_file, dpi=300, bbox_inches="tight")
 
 
 if __name__ == "__main__":
