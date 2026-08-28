@@ -136,7 +136,6 @@ def load_raw_data(filename: str) -> dict[str, list[RawData]]:
                     source=DataSource.from_dict(raw_data_entry["source"]),
                 )
             )
-
     return loaded_raw_data
 
 
@@ -328,33 +327,8 @@ class DataProcessor:
                 self.processed_data[class_label].append(data_obj)
 
     def load_raw_data(self, filename: str) -> None:
-        with open(filename, "rb") as f:
-            serialized_raw_data = orjson.loads(f.read())
-
-        loaded_raw_data: dict[str, list[RawData]] = defaultdict(list)
-        for class_label, raw_data_entries in serialized_raw_data.items():
-            for raw_data_entry in raw_data_entries:
-                loaded_raw_data[class_label].append(
-                    RawData(
-                        fpjs_data=[
-                            RawFpjsData(
-                                req_headers=raw_fpjs_data["req_headers"],
-                                req_body=raw_fpjs_data["req_body"],
-                            )
-                            for raw_fpjs_data in raw_data_entry["fpjs_data"]
-                        ],
-                        behavioral_data=[
-                            RawMmData(
-                                req_headers=raw_mm_data["req_headers"],
-                                req_body=raw_mm_data["req_body"],
-                            )
-                            for raw_mm_data in raw_data_entry["behavioral_data"]
-                        ],
-                        source=DataSource.from_dict(raw_data_entry["source"]),
-                    )
-                )
-
-        self.raw_data = loaded_raw_data
+        """Loads raw data from a file."""
+        self.raw_data = load_raw_data(filename)
 
     def save_raw_data(self, filename: str) -> None:
         serialized_raw_data: dict[str, list[dict[str, Any]]] = {}
