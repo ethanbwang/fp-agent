@@ -86,6 +86,8 @@ class TrainingPipeline:
             grouped_data[class_label] = {}
             for source, fvs in self.dataset.data[class_label].items():
                 source_dict = json.loads(source)
+
+                # Hack-y way to get task name based on naming convention
                 task_name = source_dict["task_name"].split()[0]
                 if task_name not in grouped_data[class_label]:
                     grouped_data[class_label][task_name] = []
