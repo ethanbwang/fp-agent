@@ -1142,13 +1142,14 @@ class OVRTrainingPipeline:
 
         # Fit temporary model on subset of training data to get threshold
         self.X_train_vectors, self.y_train = X_tr, y_tr
-        self.train_ovr_manual("/tmp/ovr_threshold_tmp.joblib", **train_kwargs)
+        # self.train_ovr_manual("/tmp/ovr_threshold_tmp.joblib", **train_kwargs)
+        self.train_ovr_manual(model_file, **train_kwargs)
         val_scores = self.raw_ovr_probs(X_val).max(axis=1)
         self.threshold = float(np.quantile(val_scores, false_reject_budget))
 
         # Refit final model on the full training split
-        self.X_train_vectors, self.y_train = X_full, y_full
-        self.train_ovr_manual(model_file, **train_kwargs)
+        # self.X_train_vectors, self.y_train = X_full, y_full
+        # self.train_ovr_manual(model_file, **train_kwargs)
 
         self.false_reject_budget = false_reject_budget
         return self.threshold
@@ -1200,7 +1201,6 @@ class OVRTrainingPipeline:
             )
         )
         false_reject_rate = float(np.mean(known_preds == unseen_label))
-
         unseen_recall = float(np.mean(unseen_preds == unseen_label))
 
         # Precision needs both sides pooled and depends on the known/unseen ratio
@@ -1208,10 +1208,36 @@ class OVRTrainingPipeline:
         all_true = np.concatenate(
             [y_known, np.full(len(unseen_preds), unseen_label, dtype=object)]
         )
+
+        cm_labels = list(self.classes) + [unseen_label]
+        cm = confusion_matrix(all_true, all_preds, labels=cm_labels)
+
         flagged = all_preds == unseen_label
         unseen_precision = (
             float(np.mean(all_true[flagged] == unseen_label)) if flagged.any() else 0.0
         )
+
+        # Where do undetected unseen samples end up? (unseen row, minus the
+        # correctly-rejected diagonal entry)
+        unseen_row = cm[cm_labels.index(unseen_label)]
+        absorbed_into = {
+            lbl: int(n)
+            for lbl, n in zip(cm_labels, unseen_row)
+            if lbl != unseen_label and n > 0
+        }
+
+        # Which known classes are falsely rejected, and at what rate?
+        unseen_col_idx = cm_labels.index(unseen_label)
+        per_class_frr = {}
+        for i, lbl in enumerate(cm_labels):
+            if lbl == unseen_label:
+                continue
+            support = int(cm[i].sum())
+            per_class_frr[lbl] = {
+                "false_rejected": int(cm[i, unseen_col_idx]),
+                "support": support,
+                "frr": float(cm[i, unseen_col_idx] / support) if support else 0.0,
+            }
 
         return {
             "threshold": float(threshold),
@@ -1226,7 +1252,22 @@ class OVRTrainingPipeline:
             ),
             "n_known": int(len(known_preds)),
             "n_unseen": int(len(unseen_preds)),
+            "confusion_matrix": cm,
+            "cm_labels": cm_labels,
+            "absorbed_into": absorbed_into,
+            "per_class_frr": per_class_frr,
         }
+
+    def print_confusion(self, result: dict) -> None:
+        cm, labels = result["confusion_matrix"], result["cm_labels"]
+        w = max(len(l) for l in labels) + 1
+        print(" " * w + "".join(f"{l[:7]:>9s}" for l in labels) + f"{'total':>9s}")
+        for i, lbl in enumerate(labels):
+            print(
+                f"{lbl:<{w}s}"
+                + "".join(f"{n:>9d}" for n in cm[i])
+                + f"{cm[i].sum():>9d}"
+            )
 
     def run_holdout_experiment(
         self,
